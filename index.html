@@ -1,498 +1,827 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Калькулятор антенны «Паук» (136–174 МГц)</title>
+    <title>Калькулятор Антенны "Паук" (Motorola)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: 'var(--color-brand-50, #eff6ff)',
+                            100: 'var(--color-brand-100, #dbeafe)',
+                            500: 'var(--color-brand-500, #3b82f6)',
+                            600: 'var(--color-brand-600, #2563eb)',
+                            700: 'var(--color-brand-700, #1d4ed8)',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        /* CSS Переменные темы */
         :root {
-            --bg-color: #e4ebf5;
-            --text-color: #333333;
-            --text-muted: #666666;
-            --card-bg: #e4ebf5;
-            --shadow-light: #ffffff;
-            --shadow-dark: #c8d0e7;
-            --accent-color: #0066cc;
-            --input-bg: #e4ebf5;
-            --font-size-base: 16px;
-            --shadow-intensity: 1;
-            transition: background 0.3s ease, color 0.3s ease;
+            --bg-main: #e0e5ec;
+            --card-bg: #e0e5ec;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            
+            /* Neumorphic Shadow Variables (Light) */
+            --shadow-drop: 8px 8px 16px #a3b1c6, -8px -8px 16px #ffffff;
+            --shadow-drop-sm: 4px 4px 8px #a3b1c6, -4px -4px 8px #ffffff;
+            --shadow-inset: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+            --shadow-btn-press: inset 3px 3px 6px #a3b1c6, inset -3px -3px 6px #ffffff;
+            --border-light: rgba(255, 255, 255, 0.6);
+            
+            /* Accent Colors */
+            --color-brand-500: #3b82f6;
+            --color-brand-600: #2563eb;
+            --color-brand-700: #1d4ed8;
+            
+            /* 3D Depth intensity multiplier */
+            --depth-factor: 1;
         }
 
-        [data-theme="dark"] {
-            --bg-color: #1a1d24;
-            --text-color: #e1e8ed;
-            --text-muted: #9aa0a6;
-            --card-bg: #1a1d24;
-            --shadow-light: #252a34;
-            --shadow-dark: #0f1115;
-            --accent-color: #3b82f6;
-            --input-bg: #161920;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        .dark {
+            --bg-main: #181c24;
+            --card-bg: #1e232d;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            
+            /* Neumorphic Shadow Variables (Dark) */
+            --shadow-drop: 8px 8px 18px #11141a, -6px -6px 14px #2b3240;
+            --shadow-drop-sm: 4px 4px 10px #11141a, -3px -3px 8px #2b3240;
+            --shadow-inset: inset 4px 4px 8px #11141a, inset -4px -4px 8px #2b3240;
+            --shadow-btn-press: inset 3px 3px 6px #11141a, inset -3px -3px 6px #2b3240;
+            --border-light: rgba(255, 255, 255, 0.05);
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            font-size: var(--font-size-base);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .app-container {
-            width: 100%;
-            max-width: 480px;
+        /* 3D Skeuomorphic/Neumorphic Styles */
+        .neu-card {
             background: var(--card-bg);
-            padding: 24px;
-            border-radius: 28px;
-            box-shadow: calc(12px * var(--shadow-intensity)) calc(12px * var(--shadow-intensity)) calc(24px * var(--shadow-intensity)) var(--shadow-dark), 
-                        calc(-12px * var(--shadow-intensity)) calc(-12px * var(--shadow-intensity)) calc(24px * var(--shadow-intensity)) var(--shadow-light);
-            position: relative;
+            box-shadow: var(--shadow-drop);
+            border-radius: 1.25rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        .neu-card-sm {
+            background: var(--card-bg);
+            box-shadow: var(--shadow-drop-sm);
+            border-radius: 0.85rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.2s ease;
         }
 
-        h1 {
-            font-size: 1.25rem;
+        .neu-input {
+            background: var(--card-bg);
+            box-shadow: var(--shadow-inset);
+            border-radius: 0.75rem;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .neu-input:focus {
+            border-color: var(--color-brand-500);
+            outline: none;
+        }
+
+        /* 3D Button Styles */
+        .neu-btn {
+            background: var(--card-bg);
+            box-shadow: var(--shadow-drop);
+            border-radius: 0.85rem;
+            border: 1px solid var(--border-light);
             font-weight: 700;
+            letter-spacing: 0.05em;
+            transition: all 0.15s ease-in-out;
+            position: relative;
+            user-select: none;
         }
 
-        .icon-btn {
-            background: var(--card-bg);
+        .neu-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.03);
+        }
+
+        .neu-btn:active {
+            transform: translateY(1px);
+            box-shadow: var(--shadow-btn-press);
+        }
+
+        .neu-btn-primary {
+            background: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-700));
+            color: #ffffff;
+            box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4), var(--shadow-drop-sm);
             border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
-            color: var(--text-color);
-            font-size: 1.2rem;
-            transition: transform 0.1s ease;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
-        .icon-btn:active {
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
-            transform: scale(0.96);
+        .neu-btn-primary:hover {
+            background: linear-gradient(135deg, var(--color-brand-600), var(--color-brand-700));
+            box-shadow: 0 10px 20px -4px rgba(37, 99, 235, 0.6), var(--shadow-drop-sm);
         }
 
-        /* 3D Схема антенны */
-        .schema-container {
-            width: 100%;
-            height: 180px;
+        .neu-btn-primary:active {
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        /* Calendar Grid 3D Box Style */
+        .grid-3d-box {
             background: var(--card-bg);
-            border-radius: 20px;
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
+            box-shadow: var(--shadow-drop-sm);
+            border-radius: 0.85rem;
+            border: 1px solid var(--border-light);
             position: relative;
             overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .schema-container svg {
-            width: 100%;
-            height: 100%;
+        .grid-3d-box:hover {
+            transform: translateY(-3px);
         }
 
-        .clickable-part {
-            cursor: pointer;
-            transition: filter 0.2s;
-        }
-        .clickable-part:hover {
-            filter: drop-shadow(0 0 4px var(--accent-color));
-        }
-
-        .input-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .input-wrapper {
-            background: var(--input-bg);
-            border-radius: 16px;
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            padding: 4px 16px;
-            display: flex;
-            align-items: center;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: var(--text-color);
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 10px 0;
-        }
-
-        .unit {
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .error-msg {
-            color: #ef4444;
-            font-size: 0.75rem;
-            margin-top: 4px;
-            display: none;
-        }
-
-        .presets {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .preset-btn {
-            background: var(--card-bg);
-            border: none;
-            padding: 8px 0;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-color);
-            cursor: pointer;
-            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
-        }
-        .preset-btn:active {
-            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
-        }
-
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            background: var(--card-bg);
-            border: none;
-            padding: 12px;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-color);
-            cursor: pointer;
-            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-            text-align: center;
-        }
-        .btn-primary {
-            color: var(--accent-color);
-        }
-        .btn:active {
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
-            transform: scale(0.98);
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .result-card {
-            background: var(--card-bg);
-            padding: 14px;
-            border-radius: 16px;
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .result-title {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-        }
-
-        .result-value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--accent-color);
-        }
-
-        .result-sub {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        /* Модальное окно настроек */
-        .modal {
-            position: fixed;
+        .grid-3d-box::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-            z-index: 100;
+            right: 0;
+            height: 4px;
+            background: var(--color-brand-500);
+            border-radius: 4px 4px 0 0;
+            opacity: 0.8;
         }
-        .modal.open {
-            opacity: 1;
-            pointer-events: auto;
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .modal-content {
-            background: var(--card-bg);
-            width: 90%;
-            max-width: 380px;
-            padding: 24px;
-            border-radius: 24px;
-            box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
         }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 4px;
+            opacity: 0.4;
         }
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        .setting-select, .setting-range {
-            background: var(--input-bg);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 10px;
-            color: var(--text-color);
-            outline: none;
-            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+
+        /* Modal Blur */
+        .backdrop-blur-custom {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-6 md:p-8">
 
-    <div class="app-container">
-        <div class="header">
-            <h1>Паук 136–174 МГц</h1>
-            <button class="icon-btn" id="settingsBtn" title="Настройки">⚙️</button>
-        </div>
-
-        <!-- 3D Интерактивная схема -->
-        <div class="schema-container">
-            <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-                <!-- Кабель фидер снизу -->
-                <path d="M100,105 Q100,135 120,150" stroke="#888" stroke-width="4" fill="none" stroke-dasharray="2,2"/>
-                <!-- Корпус / Узел -->
-                <circle cx="100" cy="90" r="12" fill="url(#metalGrad)" stroke="#555" stroke-width="1.5"/>
-                <!-- Элемент 2: Центральный штырь -->
-                <line x1="100" y1="90" x2="100" y2="25" stroke="var(--accent-color)" stroke-width="4" class="clickable-part" id="svgRod" onclick="highlightPart('rod')"/>
-                <!-- Элемент 7: Лучи противовесы -->
-                <line x1="100" y1="90" x2="50" y2="120" stroke="var(--accent-color)" stroke-width="3" class="clickable-part" id="svgRad1" onclick="highlightPart('rad')"/>
-                <line x1="100" y1="90" x2="150" y2="120" stroke="var(--accent-color)" stroke-width="3" class="clickable-part" id="svgRad2" onclick="highlightPart('rad')"/>
-                <line x1="100" y1="90" x2="35" y2="95" stroke="var(--accent-color)" stroke-width="3" class="clickable-part"/>
-                <line x1="100" y1="90" x2="165" y2="95" stroke="var(--accent-color)" stroke-width="3" class="clickable-part"/>
-                <defs>
-                    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ccc"/>
-                        <stop offset="100%" stop-color="#666"/>
-                    </linearGradient>
-                </defs>
-            </svg>
-        </div>
-
-        <div class="input-group">
-            <label for="freqInput">Частота (136.00 – 174.00 МГц)</label>
-            <div class="input-wrapper">
-                <input type="number" id="freqInput" min="136" max="174" step="0.01" value="145.00">
-                <span class="unit">МГц</span>
-            </div>
-            <div class="error-msg" id="errorMsg">Введите частоту строго от 136 до 174 МГц</div>
-        </div>
-
-        <div class="presets">
-            <button class="preset-btn" onclick="setFreq(136.00)">136.00</button>
-            <button class="preset-btn" onclick="setFreq(145.00)">145.00</button>
-            <button class="preset-btn" onclick="setFreq(150.00)">150.00</button>
-            <button class="preset-btn" onclick="setFreq(174.00)">174.00</button>
-        </div>
-
-        <div class="actions">
-            <button class="btn btn-primary" onclick="calculate()">РАССЧИТАТЬ</button>
-            <button class="btn" onclick="clearFields()">ОЧИСТИТЬ</button>
-        </div>
-
-        <div class="results-grid">
-            <div class="result-card" id="cardRod">
-                <div class="result-title">ЦЕНТРАЛЬНЫЙ ШТЫРЬ: </div>
+    <!-- HEADER / NAVIGATION -->
+    <header class="max-w-6xl mx-auto w-full mb-6">
+        <div class="neu-card p-4 sm:p-5 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md">
+                    <i class="fa-solid fa-satellite-dish text-xl sm:text-2xl"></i>
+                </div>
                 <div>
-                    <div class="result-value" id="resRod">49.14</div>
-                    <div class="result-sub">см</div>
+                    <h1 class="font-extrabold text-lg sm:text-2xl tracking-tight leading-tight">
+                        Паук <span class="text-brand-500 text-sm sm:text-base font-semibold uppercase px-2 py-0.5 rounded-md neu-card-sm inline-block ml-1">Motorola</span>
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Калькулятор 1/4 λ Ground Plane антенны</p>
                 </div>
             </div>
-            <div class="result-card" id="cardRad">
-                <div class="result-title">ЛУЧИ: </div>
-                <div>
-                    <div class="result-value" id="resRad">50.00</div>
-                    <div class="result-sub">см</div>
+
+            <!-- Settings Button -->
+            <button id="open-settings-btn" onclick="toggleSettingsModal(true)" class="neu-btn p-3 px-4 flex items-center space-x-2 text-slate-700 dark:text-slate-200">
+                <i class="fa-solid fa-sliders text-base text-brand-500"></i>
+                <span class="hidden sm:inline font-semibold text-xs uppercase tracking-wider">НАСТРОЙКИ</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
+
+        <!-- LEFT COLUMN: INPUTS & BUTTONS & CALENDAR-STYLE RESULTS -->
+        <div class="lg:col-span-7 flex flex-col space-y-6">
+
+            <!-- INPUT PANEL -->
+            <div class="neu-card p-6">
+                <h2 class="text-sm uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-4 flex items-center">
+                    <i class="fa-solid fa-tower-cell text-brand-500 mr-2"></i> Ввод параметров частоты
+                </h2>
+
+                <div class="mb-5">
+                    <label for="frequency-input" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-2">
+                        Рабочая частота (136.00 – 174.00 МГц):
+                    </label>
+                    <div class="relative flex items-center">
+                        <input 
+                            type="number" 
+                            id="frequency-input" 
+                            step="0.01" 
+                            min="136" 
+                            max="174" 
+                            placeholder="Введите от 136.00 до 174.00" 
+                            class="neu-input w-full py-3.5 px-4 pr-16 text-lg sm:text-xl font-bold font-mono text-slate-800 dark:text-slate-100 placeholder-slate-400"
+                            onkeydown="if(event.key==='Enter') calculateAntenna()"
+                        >
+                        <span class="absolute right-4 font-bold text-xs uppercase tracking-widest text-slate-400 pointer-events-none">
+                            МГц
+                        </span>
+                    </div>
+                    <p id="freq-hint" class="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center">
+                        <i class="fa-solid fa-circle-info mr-1 text-brand-500"></i> Диапазон радиостанций Motorola VHF: строго 136.00 – 174.00 МГц
+                    </p>
+                </div>
+
+                <!-- PRESET BUTTONS FOR QUICK ACCESS -->
+                <div class="mb-6">
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Быстрый выбор частоты (VHF):</span>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <button onclick="setPresetFreq(136.00)" class="neu-btn text-xs py-2.5 px-2 text-slate-600 dark:text-slate-300 font-mono flex flex-col items-center">
+                            <span class="font-bold">136.00 МГц</span>
+                            <span class="text-[9px] text-slate-400">Низ VHF</span>
+                        </button>
+                        <button onclick="setPresetFreq(145.00)" class="neu-btn text-xs py-2.5 px-2 text-slate-600 dark:text-slate-300 font-mono flex flex-col items-center">
+                            <span class="font-bold">145.00 МГц</span>
+                            <span class="text-[9px] text-slate-400">Полевой</span>
+                        </button>
+                        <button onclick="setPresetFreq(150.00)" class="neu-btn text-xs py-2.5 px-2 text-slate-600 dark:text-slate-300 font-mono flex flex-col items-center">
+                            <span class="font-bold">150.00 МГц</span>
+                            <span class="text-[9px] text-slate-400">Центр VHF</span>
+                        </button>
+                        <button onclick="setPresetFreq(174.00)" class="neu-btn text-xs py-2.5 px-2 text-slate-600 dark:text-slate-300 font-mono flex flex-col items-center">
+                            <span class="font-bold">174.00 МГц</span>
+                            <span class="text-[9px] text-slate-400">Верх VHF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button onclick="calculateAntenna()" class="neu-btn neu-btn-primary py-3.5 px-6 rounded-xl flex justify-center items-center text-sm font-bold tracking-wider">
+                        <i class="fa-solid fa-calculator mr-2"></i> РАССЧИТАТЬ
+                    </button>
+                    <button onclick="clearFields()" class="neu-btn py-3.5 px-6 rounded-xl flex justify-center items-center text-sm font-bold tracking-wider text-red-500 dark:text-red-400">
+                        <i class="fa-solid fa-rotate-left mr-2"></i> ОЧИСТИТЬ
+                    </button>
                 </div>
             </div>
+
+            <!-- RESULTS PANEL (CALENDAR GRID 3D STYLE) -->
+            <div class="neu-card p-6 flex-grow flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 flex items-center">
+                        <i class="fa-solid fa-square-poll-vertical text-brand-500 mr-2"></i> Результаты расчетов
+                    </h2>
+                    <span id="calc-status" class="text-xs px-2.5 py-1 rounded-full neu-card-sm font-medium text-slate-400">
+                        Ожидание ввода...
+                    </span>
+                </div>
+
+                <!-- 3D GRID RESULTS (Calendar Cell Aesthetic) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-auto">
+
+                    <!-- ELEMENT 2: RADIATOR -->
+                    <div id="card-elem-2" class="grid-3d-box p-4 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center">
+                                <span class="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center text-[10px] mr-1.5 font-bold shadow-sm">2</span>
+                                Излучатель (L2)
+                            </span>
+                            <i class="fa-solid fa-bolt text-amber-500 text-sm"></i>
+                        </div>
+                        <div class="mt-2">
+                            <div class="text-2xl sm:text-3xl font-extrabold font-mono text-brand-600 dark:text-brand-500" id="res-elem-2-cm">
+                                -- <span class="text-sm font-normal text-slate-400">см</span>
+                            </div>
+                            <div class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1" id="res-elem-2-mm">
+                                Точно: -- мм
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700/50 text-[11px] text-slate-400">
+                            Формула: 7125 / f
+                        </div>
+                    </div>
+
+                    <!-- ELEMENT 7: RADIALS -->
+                    <div id="card-elem-7" class="grid-3d-box p-4 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center">
+                                <span class="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center text-[10px] mr-1.5 font-bold shadow-sm">7</span>
+                                Противовесы (L7)
+                            </span>
+                            <i class="fa-solid fa-spider text-indigo-500 text-sm"></i>
+                        </div>
+                        <div class="mt-2">
+                            <div class="text-2xl sm:text-3xl font-extrabold font-mono text-brand-600 dark:text-brand-500" id="res-elem-7-cm">
+                                -- <span class="text-sm font-normal text-slate-400">см</span>
+                            </div>
+                            <div class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1" id="res-elem-7-mm">
+                                Точно: -- мм (каждый из 4-х)
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700/50 text-[11px] text-slate-400">
+                            Формула: 7250 / f
+                        </div>
+                    </div>
+
+                    <!-- WAVELENGTH (LAMBDA) -->
+                    <div class="grid-3d-box p-4 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                Длина волны (λ)
+                            </span>
+                            <i class="fa-solid fa-wave-square text-emerald-500 text-sm"></i>
+                        </div>
+                        <div class="mt-2">
+                            <div class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-700 dark:text-slate-200" id="res-lambda-m">
+                                -- <span class="text-sm font-normal text-slate-400">м</span>
+                            </div>
+                            <div class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1" id="res-lambda-cm">
+                                В сантиметрах: -- см
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700/50 text-[11px] text-slate-400">
+                            Формула: 300 / f
+                        </div>
+                    </div>
+
+                    <!-- QUARTER WAVELENGTH -->
+                    <div class="grid-3d-box p-4 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                1/4 Волны (Теория)
+                            </span>
+                            <i class="fa-solid fa-ruler-vertical text-purple-500 text-sm"></i>
+                        </div>
+                        <div class="mt-2">
+                            <div class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-700 dark:text-slate-200" id="res-quarter-cm">
+                                -- <span class="text-sm font-normal text-slate-400">см</span>
+                            </div>
+                            <div class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1" id="res-quarter-mm">
+                                Без коэфф. укорочения: -- мм
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700/50 text-[11px] text-slate-400">
+                            Формула: (λ / 4) * 100
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: INTERACTIVE 3D SCHEME OF SPIDER ANTENNA -->
+        <div class="lg:col-span-5 flex flex-col">
+            <div class="neu-card p-6 h-full flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 flex items-center">
+                            <i class="fa-solid fa-diagram-project text-brand-500 mr-2"></i> Схема конструкции
+                        </h2>
+                        <span class="text-[10px] font-mono px-2 py-0.5 neu-card-sm text-slate-400">GP 1/4 λ</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                        Нажмите на элемент <span class="font-bold text-brand-500">2</span> или <span class="font-bold text-indigo-500">7</span> для быстрой подсветки на схеме.
+                    </p>
+                </div>
+
+                <!-- SVG SCHEME CONTAINER -->
+                <div class="relative w-full aspect-square max-w-[360px] mx-auto my-auto p-4 flex items-center justify-center">
+                    <svg viewBox="0 0 400 420" class="w-full h-full drop-shadow-xl overflow-visible">
+                        <defs>
+                            <linearGradient id="grad-radiator" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#3b82f6"/>
+                                <stop offset="50%" stop-color="#60a5fa"/>
+                                <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="grad-radial" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="100%" stop-color="#4338ca"/>
+                            </linearGradient>
+                            <linearGradient id="grad-cable" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#334155"/>
+                                <stop offset="50%" stop-color="#64748b"/>
+                                <stop offset="100%" stop-color="#0f172a"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Hanging Hook -->
+                        <path d="M 120 20 Q 200 10 280 25" stroke="#78350f" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.6"/>
+                        <line x1="200" y1="18" x2="200" y2="40" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3 3"/>
+                        <circle cx="200" cy="42" r="5" fill="none" stroke="#94a3b8" stroke-width="2"/>
+
+                        <!-- CENTRAL RADIATOR (ELEMENT 2) -->
+                        <g id="svg-elem-2" class="cursor-pointer transition-all duration-300" onclick="highlightCard(2)">
+                            <line id="line-radiator-bg" x1="200" y1="47" x2="200" y2="180" stroke="#3b82f6" stroke-width="12" opacity="0" class="transition-opacity duration-300"/>
+                            <line x1="200" y1="47" x2="200" y2="180" stroke="url(#grad-radiator)" stroke-width="6" stroke-linecap="round"/>
+                            
+                            <!-- Label 2 Badge -->
+                            <g transform="translate(165, 105)">
+                                <rect x="-12" y="-12" width="24" height="24" rx="12" fill="#3b82f6" class="shadow-md"/>
+                                <text x="0" y="4" text-anchor="middle" fill="#ffffff" font-weight="bold" font-size="12">2</text>
+                            </g>
+                            <text x="140" y="108" text-anchor="end" class="text-[11px] font-bold fill-slate-500 dark:fill-slate-300">Штырь (L2)</text>
+                        </g>
+
+                        <!-- CENTRAL NODE HUB -->
+                        <rect x="188" y="180" width="24" height="20" rx="4" fill="#475569" stroke="#1e293b" stroke-width="2"/>
+                        <circle cx="200" cy="190" r="3" fill="#cbd5e1"/>
+
+                        <!-- COAXIAL CABLE -->
+                        <path d="M 200 200 L 200 360 Q 200 380 230 380 L 260 380" stroke="url(#grad-cable)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <rect x="260" y="373" width="18" height="14" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+
+                        <!-- RADIALS / PROTIVOVESY (ELEMENT 7) -->
+                        <g id="svg-elem-7" class="cursor-pointer transition-all duration-300" onclick="highlightCard(7)">
+                            <line id="line-radial1-bg" x1="190" y1="195" x2="80" y2="280" stroke="#6366f1" stroke-width="10" opacity="0" class="transition-opacity duration-300"/>
+                            <line x1="190" y1="195" x2="80" y2="280" stroke="url(#grad-radial)" stroke-width="4.5" stroke-linecap="round"/>
+                            
+                            <line id="line-radial2-bg" x1="210" y1="195" x2="320" y2="280" stroke="#6366f1" stroke-width="10" opacity="0" class="transition-opacity duration-300"/>
+                            <line x1="210" y1="195" x2="320" y2="280" stroke="url(#grad-radial)" stroke-width="4.5" stroke-linecap="round"/>
+
+                            <line id="line-radial3-bg" x1="195" y1="198" x2="110" y2="310" stroke="#6366f1" stroke-width="10" opacity="0" class="transition-opacity duration-300"/>
+                            <line x1="195" y1="198" x2="110" y2="310" stroke="url(#grad-radial)" stroke-width="4" stroke-linecap="round"/>
+
+                            <line id="line-radial4-bg" x1="205" y1="198" x2="290" y2="310" stroke="#6366f1" stroke-width="10" opacity="0" class="transition-opacity duration-300"/>
+                            <line x1="205" y1="198" x2="290" y2="310" stroke="url(#grad-radial)" stroke-width="4" stroke-linecap="round"/>
+
+                            <!-- Isolators at ends -->
+                            <circle cx="80" cy="280" r="3.5" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
+                            <circle cx="320" cy="280" r="3.5" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
+                            <circle cx="110" cy="310" r="3.5" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
+                            <circle cx="290" cy="310" r="3.5" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
+
+                            <!-- Label 7 Badge -->
+                            <g transform="translate(305, 250)">
+                                <rect x="-12" y="-12" width="24" height="24" rx="12" fill="#6366f1" class="shadow-md"/>
+                                <text x="0" y="4" text-anchor="middle" fill="#ffffff" font-weight="bold" font-size="12">7</text>
+                            </g>
+                            <text x="325" y="254" text-anchor="start" class="text-[11px] font-bold fill-slate-500 dark:fill-slate-300">Лучи (L7)</text>
+                        </g>
+
+                        <!-- Radio Icon Emblem -->
+                        <g transform="translate(285, 360)">
+                            <rect x="0" y="0" width="30" height="45" rx="5" fill="#1e293b"/>
+                            <rect x="5" y="10" width="20" height="15" rx="2" fill="#38bdf8" opacity="0.8"/>
+                            <circle cx="15" cy="33" r="4" fill="#64748b"/>
+                            <line x1="10" y1="0" x2="10" y2="-15" stroke="#0f172a" stroke-width="3"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="neu-card-sm p-3 text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-between">
+                    <span><i class="fa-solid fa-angle-right text-brand-500 mr-1"></i> Наклон лучей: <strong>45°</strong></span>
+                    <span><i class="fa-solid fa-omega text-brand-500 mr-1"></i> Сопротивление: <strong>~50 Ом</strong></span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-6xl mx-auto w-full mt-6 text-center text-xs text-slate-400 dark:text-slate-500">
+        <p>© 2026 Антенный калькулятор "Паук" для портативных радиостанций Motorola.</p>
+    </footer>
+
+    <!-- SETTINGS MODAL DIALOG -->
+    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-custom hidden opacity-0 transition-opacity duration-300">
+        <div class="neu-card w-full max-w-md p-6 sm:p-8 transform scale-95 transition-transform duration-300" id="settings-content">
+            
+            <div class="flex items-center justify-between mb-6 pb-3 border-b border-slate-200 dark:border-slate-700/60">
+                <h3 class="text-lg font-bold flex items-center text-slate-800 dark:text-slate-100">
+                    <i class="fa-solid fa-sliders text-brand-500 mr-2.5"></i> Настройки приложения
+                </h3>
+                <button onclick="toggleSettingsModal(false)" class="w-8 h-8 rounded-lg neu-btn flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-6">
+
+                <!-- 1. COLOR THEME SWITCHER (DARK / LIGHT) -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+                        Тема оформления:
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="theme-light-btn" onclick="setTheme('light')" class="neu-btn p-3 flex items-center justify-center space-x-2 text-sm font-semibold">
+                            <i class="fa-solid fa-sun text-amber-500"></i>
+                            <span>Светлая</span>
+                        </button>
+                        <button id="theme-dark-btn" onclick="setTheme('dark')" class="neu-btn p-3 flex items-center justify-center space-x-2 text-sm font-semibold">
+                            <i class="fa-solid fa-moon text-indigo-400"></i>
+                            <span>Темная</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. ACCENT COLOR SELECTION -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+                        Акцентный цвет:
+                    </label>
+                    <div class="flex items-center justify-between gap-2">
+                        <button onclick="setAccentColor('blue')" class="w-10 h-10 rounded-xl bg-blue-600 ring-2 ring-offset-2 ring-blue-500 hover:scale-110 transition-transform" title="Синий"></button>
+                        <button onclick="setAccentColor('emerald')" class="w-10 h-10 rounded-xl bg-emerald-600 ring-2 ring-offset-2 ring-emerald-500 hover:scale-110 transition-transform" title="Зеленый"></button>
+                        <button onclick="setAccentColor('amber')" class="w-10 h-10 rounded-xl bg-amber-500 ring-2 ring-offset-2 ring-amber-500 hover:scale-110 transition-transform" title="Оранжевый"></button>
+                        <button onclick="setAccentColor('purple')" class="w-10 h-10 rounded-xl bg-purple-600 ring-2 ring-offset-2 ring-purple-500 hover:scale-110 transition-transform" title="Фиолетовый"></button>
+                        <button onclick="setAccentColor('rose')" class="w-10 h-10 rounded-xl bg-rose-600 ring-2 ring-offset-2 ring-rose-500 hover:scale-110 transition-transform" title="Розовый"></button>
+                    </div>
+                </div>
+
+                <!-- 3. FONT SIZE SELECTOR -->
+                <div>
+                    <label for="font-size-select" class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                        Размер шрифта интерфейса:
+                    </label>
+                    <select id="font-size-select" onchange="setFontSize(this.value)" class="neu-input w-full p-3 text-sm text-slate-700 dark:text-slate-200">
+                        <option value="14px">Компактный (14px)</option>
+                        <option value="16px" selected>Стандартный (16px)</option>
+                        <option value="18px">Увеличенный (18px)</option>
+                    </select>
+                </div>
+
+                <!-- 4. 3D SHADOW DEPTH ADJUSTMENT -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="depth-range" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Глубина 3D-теней:
+                        </label>
+                        <span id="depth-value" class="text-xs font-mono font-bold text-brand-500">100%</span>
+                    </div>
+                    <input 
+                        type="range" 
+                        id="depth-range" 
+                        min="0.3" 
+                        max="1.8" 
+                        step="0.1" 
+                        value="1" 
+                        oninput="setDepthEffect(this.value)"
+                        class="w-full accent-brand-500 cursor-pointer"
+                    >
+                </div>
+
+            </div>
+
+            <!-- MODAL CLOSE BUTTON -->
+            <div class="mt-8">
+                <button onclick="toggleSettingsModal(false)" class="neu-btn neu-btn-primary w-full py-3 text-sm font-bold tracking-wider uppercase">
+                    Сохранить
+                </button>
+            </div>
+
         </div>
     </div>
 
-    <!-- Модальное окно настроек -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Настройки</h2>
-                <button class="icon-btn" id="closeModalBtn">✕</button>
-            </div>
-            <div class="setting-row">
-                <span>Тема оформления</span>
-                <select id="themeSelect" class="setting-select">
-                    <option value="light">Светлая</option>
-                    <option value="dark">Темная</option>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span>Акцентный цвет</span>
-                <select id="colorSelect" class="setting-select">
-                    <option value="#0066cc">Синий</option>
-                    <option value="#10b981">Зеленый</option>
-                    <option value="#f59e0b">Оранжевый</option>
-                    <option value="#8b5cf6">Фиолетовый</option>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span>Объем 3D теней</span>
-                <input type="range" id="shadowRange" class="setting-range" min="0.5" max="1.5" step="0.1" value="1">
-            </div>
-        </div>
-    </div>
-
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        const freqInput = document.getElementById('freqInput');
-        const errorMsg = document.getElementById('errorMsg');
-        const resRod = document.getElementById('resRod');
-        const resRad = document.getElementById('resRad');
-        const cardRod = document.getElementById('cardRod');
-        const cardRad = document.getElementById('cardRad');
+        let currentTheme = 'dark';
+        let currentAccent = 'blue';
 
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const themeSelect = document.getElementById('themeSelect');
-        const colorSelect = document.getElementById('colorSelect');
-        const shadowRange = document.getElementById('shadowRange');
+        const accentGradients = {
+            blue: { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+            emerald: { 500: '#10b981', 600: '#059669', 700: '#047857' },
+            purple: { 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce' },
+            amber: { 500: '#f59e0b', 600: '#d97706', 700: '#b45309' },
+            rose: { 500: '#f43f5e', 600: '#e11d48', 700: '#be123c' }
+        };
 
-        // Управление темой
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            themeSelect.value = theme;
-            localStorage.setItem('spider_theme', theme);
+        window.addEventListener('DOMContentLoaded', () => {
+            setTheme('dark');
+        });
+
+        // CALCULATION LOGIC
+        function calculateAntenna() {
+            const freqInput = document.getElementById('frequency-input');
+            const freq = parseFloat(freqInput.value);
+
+            // Strict range validation: 136.00 to 174.00 MHz
+            if (isNaN(freq) || freq < 136 || freq > 174) {
+                showToast('Частота должна быть в пределах строго от 136.00 до 174.00 МГц!');
+                freqInput.classList.add('ring-2', 'ring-red-500');
+                
+                const hintEl = document.getElementById('freq-hint');
+                if (hintEl) {
+                    hintEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-red-500"></i> <span class="text-red-500 font-bold">Ошибка: Вводите частоту только в диапазоне 136.00 – 174.00 МГц</span>`;
+                }
+                return;
+            }
+
+            freqInput.classList.remove('ring-2', 'ring-red-500');
+            const hintEl = document.getElementById('freq-hint');
+            if (hintEl) {
+                hintEl.innerHTML = `<i class="fa-solid fa-circle-info mr-1 text-brand-500"></i> Диапазон радиостанций Motorola VHF: строго 136.00 – 174.00 МГц`;
+            }
+
+            // Formulas:
+            // Element 2: L2 = 7125 / f (в см)
+            const elem2_cm = 7125 / freq;
+            const elem2_mm = elem2_cm * 10;
+
+            // Element 7: L7 = 7250 / f (в см)
+            const elem7_cm = 7250 / freq;
+            const elem7_mm = elem7_cm * 10;
+
+            // Wavelength λ = 300 / f (в метрах)
+            const lambda_m = 300 / freq;
+            const lambda_cm = lambda_m * 100;
+
+            // Theoretical 1/4 Wavelength
+            const quarter_cm = lambda_cm / 4;
+            const quarter_mm = quarter_cm * 10;
+
+            // Display Results
+            document.getElementById('res-elem-2-cm').innerHTML = `${elem2_cm.toFixed(2)} <span class="text-sm font-normal text-slate-400">см</span>`;
+            document.getElementById('res-elem-2-mm').innerText = `Точно: ${elem2_mm.toFixed(1)} мм`;
+
+            document.getElementById('res-elem-7-cm').innerHTML = `${elem7_cm.toFixed(2)} <span class="text-sm font-normal text-slate-400">см</span>`;
+            document.getElementById('res-elem-7-mm').innerText = `Точно: ${elem7_mm.toFixed(1)} мм (каждый из 4-х)`;
+
+            document.getElementById('res-lambda-m').innerHTML = `${lambda_m.toFixed(3)} <span class="text-sm font-normal text-slate-400">м</span>`;
+            document.getElementById('res-lambda-cm').innerText = `В сантиметрах: ${lambda_cm.toFixed(1)} см`;
+
+            document.getElementById('res-quarter-cm').innerHTML = `${quarter_cm.toFixed(2)} <span class="text-sm font-normal text-slate-400">см</span>`;
+            document.getElementById('res-quarter-mm').innerText = `Без коэфф. укорочения: ${quarter_mm.toFixed(1)} мм`;
+
+            const statusEl = document.getElementById('calc-status');
+            statusEl.innerText = `Рассчитано для ${freq.toFixed(2)} МГц`;
+            statusEl.className = "text-xs px-2.5 py-1 rounded-full neu-card-sm font-bold text-emerald-500 bg-emerald-500/10";
+
+            triggerSvgAnimation();
         }
 
-        themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
-
-        // Инициализация темы
-        const savedTheme = localStorage.getItem('spider_theme') || 'dark';
-        setTheme(savedTheme);
-
-        // Настройки цвета и теней
-        colorSelect.addEventListener('change', (e) => {
-            document.documentElement.style.setProperty('--accent-color', e.target.value);
-            localStorage.setItem('spider_color', e.target.value);
-        });
-        const savedColor = localStorage.getItem('spider_color');
-        if (savedColor) {
-            document.documentElement.style.setProperty('--accent-color', savedColor);
-            colorSelect.value = savedColor;
-        }
-
-        shadowRange.addEventListener('input', (e) => {
-            document.documentElement.style.setProperty('--shadow-intensity', e.target.value);
-        });
-
-        // Модальное окно
-        settingsBtn.addEventListener('click', () => settingsModal.classList.add('open'));
-        closeModalBtn.addEventListener('click', () => settingsModal.classList.remove('open'));
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) settingsModal.classList.remove('open');
-        });
-
-        function setFreq(val) {
-            freqInput.value = val.toFixed(2);
-            calculate();
+        function setPresetFreq(value) {
+            document.getElementById('frequency-input').value = value.toFixed(2);
+            calculateAntenna();
         }
 
         function clearFields() {
+            const freqInput = document.getElementById('frequency-input');
             freqInput.value = '';
-            resRod.innerText = '0.00';
-            resRad.innerText = '0.00';
-            errorMsg.style.display = 'none';
-        }
+            freqInput.classList.remove('ring-2', 'ring-red-500');
 
-        function calculate() {
-            const f = parseFloat(freqInput.value);
-            if (isNaN(f) || f < 136 || f > 174) {
-                errorMsg.style.display = 'block';
-                return;
+            const hintEl = document.getElementById('freq-hint');
+            if (hintEl) {
+                hintEl.innerHTML = `<i class="fa-solid fa-circle-info mr-1 text-brand-500"></i> Диапазон радиостанций Motorola VHF: строго 136.00 – 174.00 МГц`;
             }
-            errorMsg.style.display = 'none';
 
-            // Формулы расчета под диапазон 136–174 МГц
-            const rod = 7125 / f;
-            const rad = 7250 / f;
+            document.getElementById('res-elem-2-cm').innerHTML = `-- <span class="text-sm font-normal text-slate-400">см</span>`;
+            document.getElementById('res-elem-2-mm').innerText = 'Точно: -- мм';
 
-            resRod.innerText = rod.toFixed(2);
-            resRad.innerText = rad.toFixed(2);
+            document.getElementById('res-elem-7-cm').innerHTML = `-- <span class="text-sm font-normal text-slate-400">см</span>`;
+            document.getElementById('res-elem-7-mm').innerText = 'Точно: -- мм (каждый из 4-х)';
+
+            document.getElementById('res-lambda-m').innerHTML = `-- <span class="text-sm font-normal text-slate-400">м</span>`;
+            document.getElementById('res-lambda-cm').innerText = 'В сантиметрах: -- см';
+
+            document.getElementById('res-quarter-cm').innerHTML = `-- <span class="text-sm font-normal text-slate-400">см</span>`;
+            document.getElementById('res-quarter-mm').innerText = 'Без коэфф. укорочения: -- мм';
+
+            const statusEl = document.getElementById('calc-status');
+            statusEl.innerText = 'Ожидание ввода...';
+            statusEl.className = "text-xs px-2.5 py-1 rounded-full neu-card-sm font-medium text-slate-400";
+
+            const glElements = ['line-radiator-bg', 'line-radial1-bg', 'line-radial2-bg', 'line-radial3-bg', 'line-radial4-bg'];
+            glElements.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.style.opacity = '0';
+            });
         }
 
-        function highlightPart(part) {
-            if (part === 'rod') {
-                cardRod.style.transform = 'scale(1.05)';
-                setTimeout(() => cardRod.style.transform = 'none', 300);
+        function triggerSvgAnimation() {
+            const glElements = ['line-radiator-bg', 'line-radial1-bg', 'line-radial2-bg', 'line-radial3-bg', 'line-radial4-bg'];
+            glElements.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.style.opacity = '0.6';
+                    setTimeout(() => {
+                        el.style.opacity = '0.25';
+                    }, 400);
+                }
+            });
+        }
+
+        function highlightCard(elemId) {
+            const card2 = document.getElementById('card-elem-2');
+            const card7 = document.getElementById('card-elem-7');
+
+            if(elemId === 2) {
+                card2.classList.add('ring-2', 'ring-brand-500', 'scale-[1.02]');
+                card7.classList.remove('ring-2', 'ring-brand-500', 'scale-[1.02]');
+                setTimeout(() => card2.classList.remove('ring-2', 'ring-brand-500', 'scale-[1.02]'), 1500);
+            } else if(elemId === 7) {
+                card7.classList.add('ring-2', 'ring-brand-500', 'scale-[1.02]');
+                card2.classList.remove('ring-2', 'ring-brand-500', 'scale-[1.02]');
+                setTimeout(() => card7.classList.remove('ring-2', 'ring-brand-500', 'scale-[1.02]'), 1500);
+            }
+        }
+
+        function toggleSettingsModal(show) {
+            const modal = document.getElementById('settings-modal');
+            const content = document.getElementById('settings-content');
+
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }, 10);
             } else {
-                cardRad.style.transform = 'scale(1.05)';
-                setTimeout(() => cardRad.style.transform = 'none', 300);
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
             }
         }
 
-        freqInput.addEventListener('input', calculate);
-        calculate();
+        function setTheme(theme) {
+            currentTheme = theme;
+            const html = document.documentElement;
+            const lightBtn = document.getElementById('theme-light-btn');
+            const darkBtn = document.getElementById('theme-dark-btn');
+
+            if (theme === 'dark') {
+                html.classList.add('dark');
+                darkBtn.classList.add('ring-2', 'ring-brand-500');
+                lightBtn.classList.remove('ring-2', 'ring-brand-500');
+            } else {
+                html.classList.remove('dark');
+                lightBtn.classList.add('ring-2', 'ring-brand-500');
+                darkBtn.classList.remove('ring-2', 'ring-brand-500');
+            }
+        }
+
+        function setAccentColor(colorName) {
+            if(!accentGradients[colorName]) return;
+            currentAccent = colorName;
+            const palette = accentGradients[colorName];
+
+            document.documentElement.style.setProperty('--color-brand-500', palette[500]);
+            document.documentElement.style.setProperty('--color-brand-600', palette[600]);
+            document.documentElement.style.setProperty('--color-brand-700', palette[700]);
+        }
+
+        function setFontSize(size) {
+            document.documentElement.style.fontSize = size;
+        }
+
+        function setDepthEffect(value) {
+            document.getElementById('depth-value').innerText = `${Math.round(value * 100)}%`;
+            
+            if (currentTheme === 'dark') {
+                const dropDistance = 8 * value;
+                const blur = 18 * value;
+                document.documentElement.style.setProperty('--shadow-drop', `${dropDistance}px ${dropDistance}px ${blur}px #11141a, -${dropDistance*0.75}px -${dropDistance*0.75}px ${blur*0.8}px #2b3240`);
+            } else {
+                const dropDistance = 8 * value;
+                const blur = 16 * value;
+                document.documentElement.style.setProperty('--shadow-drop', `${dropDistance}px ${dropDistance}px ${blur}px #a3b1c6, -${dropDistance}px -${dropDistance}px ${blur}px #ffffff`);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-5 right-5 z-50 neu-card p-4 text-xs font-bold text-red-500 flex items-center space-x-2 shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0';
+            toast.innerHTML = `<i class="fa-solid fa-circle-exclamation text-base"></i><span>${message}</span>`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
     </script>
 </body>
 </html>
